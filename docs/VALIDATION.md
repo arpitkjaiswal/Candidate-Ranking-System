@@ -32,6 +32,12 @@ npm run test:e2e
 
 The base URL can be changed through `TALENT_E2E_URL`. `PLAYWRIGHT_CHROMIUM_EXECUTABLE` selects an already installed Chromium executable. Tests create synthetic test roles and update demo notes; never target a real hiring workspace. No authenticated production workspace is used by this browser suite.
 
+## Reproduce production-stack checks
+
+Build `talentos:local` from the Dockerfile, then run `python scripts/smoke_compose.py`. The script uses the local Docker socket, a random loopback port, a unique Compose project, temporary credentials, and disposable volumes. It validates PostgreSQL migrations, nginx-to-API readiness, authentication, document processing, stale-write rejection, persistence after API restart, and role deletion. Its `finally` block removes only that test project. A port-allocation collision fails the test rather than targeting another deployment.
+
+The SQLite backup command was also exercised: the snapshot passed integrity checks, retained committed rows, and refused to overwrite an existing backup.
+
 ## Boundaries
 
 These results verify the current cloud machine and a local container. They do not establish a published deployment, fresh-task restoration, load capacity, WCAG conformance, security certification, or accuracy/fairness on real applicant data. The backend suite uses temporary databases and includes controlled score invariance checks rather than a production model benchmark. See the model card and architecture document for limitations.

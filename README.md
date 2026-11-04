@@ -42,12 +42,14 @@ Local settings can be loaded with `--env-file .env` after copying `.env.example`
 
 ```bash
 python -m pytest -q
-ruff check backend migrations tests
-ruff format --check backend migrations tests
+ruff check backend migrations scripts tests
+ruff format --check backend migrations scripts tests
 npm run build --prefix frontend
 ```
 
 Integration tests cover TXT/DOCX/PDF parsing, email preservation, invalid and oversized files, decompression limits, duplicate handling, persistence, stage transitions, candidate deletion, transient Resume Lab analysis, authentication, and rate limiting. Ranking tests check relevance ordering, score bounds, deterministic results, evidence, and contact/name invariance on controlled examples. These are engineering checks, not an accuracy or fairness certification on real applicants.
+
+Production deployment checks run with `python scripts/smoke_compose.py` after building `talentos:local`; the script creates and removes its own isolated test stack. CI runs this check as a separate quality gate.
 
 Browser smoke tests are in `frontend/e2e/`; see [validation](docs/VALIDATION.md) for commands and observed results.
 
