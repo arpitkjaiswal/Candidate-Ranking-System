@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resume Parser + JD Matcher</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="bg-grid"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">✓</div>
+      <div>
+        <h1>Resume Parser</h1>
+        <p>Extract structured data and match against job descriptions</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="panel input-panel">
+      <h2 class="panel-title">Upload & Parse</h2>
+
+      <label class="dropzone" id="dropzone">
+        <input type="file" id="fileInput" accept=".pdf,.docx,.txt" hidden />
+        <div class="dz-inner">
+          <div class="dz-icon">📄</div>
+          <p class="dz-main">Drop resume or <span>click to browse</span></p>
+          <p class="dz-sub">PDF, DOCX, or TXT · Up to 5MB</p>
+          <p class="dz-file" id="fileName"></p>
+        </div>
+      </label>
+
+      <div class="jd-block">
+        <div class="jd-head">
+          <label for="jdInput">Job Description</label>
+          <button class="link-btn" id="sampleBtn" type="button">Try sample</button>
+        </div>
+        <p class="muted" style="margin-bottom: 8px;">Optional — paste to see skill match and missing requirements</p>
+        <textarea id="jdInput" rows="8" placeholder="Paste job description for matching..."></textarea>
+      </div>
+
+      <div class="actions">
+        <button class="btn secondary" id="parseBtn">Parse Resume</button>
+        <button class="btn primary" id="matchBtn">Match to JD</button>
+      </div>
+      <p class="error" id="error"></p>
+    </section>
+
+    <section class="panel result-panel">
+      <h2 class="panel-title">Results</h2>
+      <div id="placeholder" class="placeholder">
+        <div class="ph-icon">📋</div>
+        <p>Upload a resume to get started</p>
+      </div>
+      <div id="results" class="results hidden"></div>
+    </section>
+  </main>
+
+  <!-- Questions Modal -->
+  <div id="questionsModal" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalSkillName"></h2>
+        <button class="modal-close" id="closeModal">✕</button>
+      </div>
+      <div class="modal-body" id="questionsContainer"></div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <p>Built with FastAPI • Pure Python TF-IDF • No external APIs</p>
+  </footer>
+
+  <script src="/static/questions.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>
