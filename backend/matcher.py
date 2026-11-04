@@ -13,7 +13,6 @@ from __future__ import annotations
 import math
 import re
 from collections import Counter
-from typing import Dict, List
 
 from .skills import SKILL_ALIASES
 
@@ -34,7 +33,7 @@ STOPWORDS = set(
 TOKEN_RE = re.compile(r"[a-zA-Z][a-zA-Z0-9+#.\-]*")
 
 
-def _tokenize(text: str) -> List[str]:
+def _tokenize(text: str) -> list[str]:
     tokens = TOKEN_RE.findall(text.lower())
     return [t for t in tokens if t not in STOPWORDS and len(t) > 1]
 
@@ -57,7 +56,7 @@ def _tfidf_cosine(text_a: str, text_b: str) -> float:
     # Smoothed IDF so shared terms still contribute.
     idf = {t: math.log((1 + 2) / (1 + df(t))) + 1 for t in vocab}
 
-    def vec(tf: Counter) -> Dict[str, float]:
+    def vec(tf: Counter) -> dict[str, float]:
         return {t: tf[t] * idf[t] for t in tf}
 
     va, vb = vec(tf_a), vec(tf_b)
@@ -69,7 +68,7 @@ def _tfidf_cosine(text_a: str, text_b: str) -> float:
     return dot / (norm_a * norm_b)
 
 
-def _extract_skills(text: str) -> List[str]:
+def _extract_skills(text: str) -> list[str]:
     lower = " " + text.lower() + " "
     found = []
     for canonical, aliases in SKILL_ALIASES.items():
@@ -81,7 +80,7 @@ def _extract_skills(text: str) -> List[str]:
     return sorted(set(found))
 
 
-def match(resume_text: str, jd_text: str, resume_skills: List[str] | None = None) -> Dict:
+def match(resume_text: str, jd_text: str, resume_skills: list[str] | None = None) -> dict:
     """Return a match report between a resume and a job description."""
     if resume_skills is None:
         resume_skills = _extract_skills(resume_text)

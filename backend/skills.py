@@ -25,7 +25,6 @@ SKILL_ALIASES = {
     "MATLAB": ["matlab"],
     "SQL": ["sql"],
     "Bash": ["bash", "shell scripting"],
-
     # Web / frameworks
     "React": ["react", "react.js", "reactjs"],
     "Angular": ["angular", "angular.js", "angularjs"],
@@ -41,7 +40,6 @@ SKILL_ALIASES = {
     "CSS": ["css", "css3"],
     "Tailwind": ["tailwind", "tailwindcss"],
     "Bootstrap": ["bootstrap"],
-
     # Data / ML / AI
     "Machine Learning": ["machine learning", "ml"],
     "Deep Learning": ["deep learning"],
@@ -59,7 +57,6 @@ SKILL_ALIASES = {
     "Statistics": ["statistics", "statistical"],
     "LLM": ["llm", "large language model", "large language models"],
     "Generative AI": ["generative ai", "genai", "gen ai"],
-
     # Databases
     "MySQL": ["mysql"],
     "PostgreSQL": ["postgresql", "postgres"],
@@ -69,7 +66,6 @@ SKILL_ALIASES = {
     "Oracle": ["oracle db", "oracle database"],
     "Cassandra": ["cassandra"],
     "Elasticsearch": ["elasticsearch"],
-
     # Cloud / DevOps
     "AWS": ["aws", "amazon web services"],
     "Azure": ["azure"],
@@ -81,7 +77,6 @@ SKILL_ALIASES = {
     "Terraform": ["terraform"],
     "Linux": ["linux", "unix"],
     "Git": ["git", "github", "gitlab"],
-
     # Concepts
     "REST API": ["rest api", "restful", "rest apis"],
     "GraphQL": ["graphql"],

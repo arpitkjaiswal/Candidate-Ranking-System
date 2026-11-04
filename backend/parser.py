@@ -8,17 +8,22 @@ from __future__ import annotations
 
 import io
 import re
-from typing import Dict, List
 
-from pypdf import PdfReader
 from docx import Document
+from pypdf import PdfReader
 
 from .skills import SKILL_ALIASES
-
 
 # --------------------------------------------------------------------------- #
 # Text extraction
 # --------------------------------------------------------------------------- #
+MAX_EXTRACTED_TEXT = 200_000
+
+
+class ResumeTooLargeError(ValueError):
+    """The extracted document is unsuitable for bounded resume analysis."""
+
+
 def extract_text(filename: str, data: bytes) -> str:
     """Extract raw text from an uploaded resume file."""
     name = filename.lower()
@@ -33,19 +38,20 @@ def extract_text(filename: str, data: bytes) -> str:
 
 def _extract_pdf(data: bytes) -> str:
     reader = PdfReader(io.BytesIO(data))
+    if len(reader.pages) > 50:
+        raise ResumeTooLargeError("PDF exceeds the 50-page limit.")
     parts = []
+    total = 0
     for page in reader.pages:
-        parts.append(page.extract_text() or "")
+        content = page.extract_text() or ""
+        total += len(content)
+        if total > MAX_EXTRACTED_TEXT:
+            raise ResumeTooLargeError(
+                "Extracted text exceeds 200,000 characters. Upload a shorter resume."
+            )
+        parts.append(content)
     text = "\n".join(parts)
 
-    # Option 2: Clean font/icon glyph artifacts before emails.
-    # Strips 1-3 letter icon prefixes (like 'p' or 'env') that get concatenated 
-    # onto the email local-part during PDF text extraction.
-    text = re.sub(
-        r"(?<=\s)[a-zA-Z]{1,3}(?=[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})",
-        "",
-        text,
-    )
     return text
 
 
@@ -62,9 +68,7 @@ def _extract_docx(data: bytes) -> str:
 # Field parsing
 # --------------------------------------------------------------------------- #
 EMAIL_RE = re.compile(r"[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}")
-PHONE_RE = re.compile(
-    r"(?:(?:\+?\d{1,3}[\s-]?)?(?:\(?\d{3,5}\)?[\s-]?)?\d{3}[\s-]?\d{3,4})"
-)
+PHONE_RE = re.compile(r"(?:(?:\+?\d{1,3}[\s-]?)?(?:\(?\d{3,5}\)?[\s-]?)?\d{3}[\s-]?\d{3,4})")
 URL_RE = re.compile(r"(?:https?://|www\.)[^\s)]+", re.IGNORECASE)
 LINKEDIN_RE = re.compile(r"(?:linkedin\.com/in/[^\s)]+)", re.IGNORECASE)
 GITHUB_RE = re.compile(r"(?:github\.com/[^\s)]+)", re.IGNORECASE)
@@ -75,13 +79,38 @@ LINKEDIN_HANDLE_RE = re.compile(r"/?linkedin[/:]?([A-Za-z0-9][A-Za-z0-9._-]{1,})
 GITHUB_HANDLE_RE = re.compile(r"/?github[/:]?([A-Za-z0-9][A-Za-z0-9._-]{1,})", re.IGNORECASE)
 
 DEGREE_KEYWORDS = [
-    "b.tech", "btech", "b.e", "bachelor", "b.sc", "bsc", "bca",
-    "m.tech", "mtech", "master", "m.sc", "msc", "mca", "mba",
-    "ph.d", "phd", "doctorate", "diploma", "12th", "10th", "intermediate",
+    "b.tech",
+    "btech",
+    "b.e",
+    "bachelor",
+    "b.sc",
+    "bsc",
+    "bca",
+    "m.tech",
+    "mtech",
+    "master",
+    "m.sc",
+    "msc",
+    "mca",
+    "mba",
+    "ph.d",
+    "phd",
+    "doctorate",
+    "diploma",
+    "12th",
+    "10th",
+    "intermediate",
 ]
 
 SECTION_HEADERS = {
-    "experience": ["experience", "work experience", "employment", "professional experience", "internship", "internships"],
+    "experience": [
+        "experience",
+        "work experience",
+        "employment",
+        "professional experience",
+        "internship",
+        "internships",
+    ],
     "education": ["education", "academic", "qualification", "academics"],
     "projects": ["projects", "project work", "personal projects"],
     "skills": ["skills", "technical skills", "technologies", "tech stack"],
@@ -138,7 +167,7 @@ def _guess_name(text: str, email: str | None) -> str:
     return "Unknown"
 
 
-def _extract_skills(text: str) -> List[str]:
+def _extract_skills(text: str) -> list[str]:
     lower = " " + text.lower() + " "
     found = []
     for canonical, aliases in SKILL_ALIASES.items():
@@ -150,7 +179,7 @@ def _extract_skills(text: str) -> List[str]:
     return sorted(set(found))
 
 
-def _extract_education(text: str) -> List[str]:
+def _extract_education(text: str) -> list[str]:
     results = []
     for ln in text.splitlines():
         low = ln.lower()
@@ -161,7 +190,7 @@ def _extract_education(text: str) -> List[str]:
     return results[:6]
 
 
-def _extract_section(text: str, keys: List[str]) -> str:
+def _extract_section(text: str, keys: list[str]) -> str:
     """Return the text block under a section header until the next header."""
     lines = text.splitlines()
     all_headers = [h for hs in SECTION_HEADERS.values() for h in hs]
@@ -202,9 +231,13 @@ def _extract_github(text: str) -> str | None:
     return None
 
 
-def parse_resume(filename: str, data: bytes) -> Dict:
+def parse_resume(filename: str, data: bytes) -> dict:
     """Full pipeline: bytes -> structured resume dict."""
     text = extract_text(filename, data)
+    if len(text) > MAX_EXTRACTED_TEXT:
+        raise ResumeTooLargeError(
+            "Extracted text exceeds 200,000 characters. Upload a shorter resume."
+        )
     emails = EMAIL_RE.findall(text)
     phones = PHONE_RE.findall(text)
     # Filter phone matches to plausible lengths.
